@@ -2,9 +2,7 @@
 
 Um projeto dedicado a disciplina de Estrutura de Dados do curso de Bacharelado em Ciência da Computação na UFAL, como método avaliativo da AB2 e aprendizado.
 
-Primeiro de todos os markdown do projeto
-
-Apenas testando
+Primeiro de todos os markdown do projeto, apenas testando
 
 # Membros da Equipe
 
