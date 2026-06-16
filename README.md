@@ -4,6 +4,10 @@ Um projeto dedicado a disciplina de Estrutura de Dados do curso de Bacharelado e
 
 Primeiro de todos os markdown do projeto, apenas testando
 
+# Organização
+
+
+
 # Membros da Equipe
 
 Adryan Victor - 2025027518
