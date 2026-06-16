@@ -1,61 +1,114 @@
 class Livro:
-    def __init__(self,ISBN:str,titulo:str,autor:str, ano_publicacao:int,qtd_exemplares:int):
-        self.ISBN = ISBN
+
+    def __init__(self,isbn:str,titulo:str,autor:str, ano_publicacao:int,qtd_exemplares:int):
+        self.isbn = isbn
         self.titulo = titulo
         self.autor = autor
         self.ano_publicacao = ano_publicacao
         self.qtd_exemplares = qtd_exemplares
 
+class Livro_Node:
+
+    def __init__(self, livro):
+        self.livro = livro
+        self.proximo = None
+
 class Biblioteca:
+
     def __init__(self):
-        pass
+        self.lista_livros = Lista_Encadeada()
 
-# Estruturas de Dados
+    def cadastrar_livro(self, livro):
+        self.lista_livros.inserir(livro)
 
+    def exibir_todos(self):
+        self.lista_livros.exibir_todos()
+
+ 
 class Lista_Encadeada:
 
     def __init__(self):
-        pass
+        self.head = None
 
-    
-class Tabela_Hash:
-    def __init__(self):
-        pass
+    def inserir_no_inicio(self, livro):
+        novo_node = Livro_Node(livro)
+        novo_node.proximo = self.head
+        self.head = novo_node
 
-class Arvore_Binaria:
-    def __init__(self):
-        pass
+    def inserir(self, livro):
+        
+        novo_node = Livro_Node(livro)
+        atual = self.head
 
-class Fila:
-    def __init__(self):
-        pass
+        if self.head == None:
 
-class Pilha:
-    def __init__(self):
-        pass
+            self.head = novo_node
+            self.head.proximo = None
 
-# Métodos
+            return
+        
+        else:
 
-def cadastrar_livro():
-    pass
+            while atual.proximo is not None:
 
-def remover_livro():
-    pass
+                atual = atual.proximo
 
-def buscar_livro_ISBN():
-    pass
+            atual.proximo = novo_node
 
-def listar_livros():
-    pass
+            return
 
-def emprestar_livro():
-    pass
+    def buscar_por_isbn(self, isbn):
 
-def devolver_livro():
-    pass
+        atual = self.head
 
-def gerar_relatorio():
-    pass
+        while atual is not None:
 
-def desfazer_ultimo_emprestimo():
-    pass
+            if atual.livro.isbn == isbn:
+
+                return atual.livro
+            
+            atual = atual.proximo
+
+        return None
+
+    def remover_por_isbn(self, isbn):
+
+        atual = self.head
+        anterior = None
+
+        if atual is not None and atual.livro.isbn == isbn:
+            self.head = atual.proximo
+            return True
+
+        while atual is not None and atual.livro.isbn != isbn:
+            anterior = atual
+            atual = atual.proximo
+
+        if atual is None:
+            return False
+
+        anterior.proximo = atual.proximo
+        return True
+
+    def exibir_todos(self):
+
+        atual = self.head
+        if atual is None:
+            print("A lista está vazia.")
+            return
+            
+        while atual is not None:
+            print(f"Título: {atual.livro.titulo} | ISBN: {atual.livro.isbn}")
+            atual = atual.proximo
+
+Oteca = Biblioteca()
+
+livro1 = Livro("1234567890123","Pare de se Odiar", "Alexandrismos",2022,3)
+livro2 = Livro("2345678901234","Amanhã tem prova de Cálculo", "coitado",2026,1)
+livro3 = Livro("3456789012345","Eu não aguento mais", "eu",2026,100)
+
+Oteca.cadastrar_livro(livro1)
+Oteca.cadastrar_livro(livro2)
+Oteca.cadastrar_livro(livro3)
+
+Oteca.exibir_todos()
