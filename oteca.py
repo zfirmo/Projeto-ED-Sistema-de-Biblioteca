@@ -140,7 +140,6 @@ class OtecaModernApp:
         lbl = ctk.CTkLabel(frame, text=texto_label, font=FONT_LABEL, text_color=COR_TEXTO_MUTED, anchor="w")
         lbl.pack(fill="x", pady=(0, 4))
         
-        # Entrada no estilo "BorderBottom" simulada perfeitamente sumindo com as outras bordas
         entry = ctk.CTkEntry(frame, font=FONT_TEXT, text_color=COR_TEXTO_MAIN, fg_color=COR_CARD_BG, 
                              border_color=COR_LINHA_INPUT, border_width=1, height=35, corner_radius=6)
         entry.pack(fill="x", pady=(0, 18))
@@ -148,7 +147,7 @@ class OtecaModernApp:
         return frame, entry
 
     def criar_estruturas_principais(self):
-        # Header Superior Totalmente Flat
+
         self.header = ctk.CTkFrame(self.root, fg_color=COR_FUNDO_GERAL, height=100, corner_radius=0)
         self.header.pack(side="top", fill="x")
         self.header.pack_propagate(False)
@@ -160,20 +159,17 @@ class OtecaModernApp:
             imagem_pil = Image.open("oteca_logo.png") 
             self.logo_ctk = ctk.CTkImage(light_image=imagem_pil, dark_image=imagem_pil, size=(250, 250))
             
-            # 2. Cria o label usando 'image=' em vez de 'text='
             lbl_logo = ctk.CTkLabel(logo_container, image=self.logo_ctk, text="")
             lbl_logo.pack(anchor="center")
         except Exception as e:
             print(f"Erro ao carregar logo: {e}")
-            # Fallback caso a imagem não carregue
+
             lbl_brand = ctk.CTkLabel(logo_container, text="OTECA 📚", text_color=COR_SIDEBAR_ATIVO, font=("Segoe UI", 28, "bold"))
             lbl_brand.pack(anchor="center")
-        # ----------------------------
 
         lbl_subbrand = ctk.CTkLabel(logo_container, text="Sistema de Gerenciamento de Biblioteca", text_color=COR_TEXTO_MUTED, font=("Segoe UI", 11))
         lbl_subbrand.pack(anchor="center")
 
-        # Sidebar Lateral Moderna
         self.sidebar = ctk.CTkFrame(self.root, fg_color=COR_SIDEBAR, width=250, corner_radius=0)
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
@@ -181,7 +177,6 @@ class OtecaModernApp:
         lbl_nav = ctk.CTkLabel(self.sidebar, text="NAVEGAÇÃO", text_color="#F4EFEA", font=("Segoe UI", 10, "bold"), anchor="w")
         lbl_nav.pack(pady=(40, 15), padx=25, fill="x")
 
-        # CustomTkinter Buttons com Cantos Arredondados
         self.btn_nav_cadastro = ctk.CTkButton(self.sidebar, text="  📋   Cadastrar Livro", fg_color=COR_SIDEBAR, 
                                              text_color="#ECE6E1", hover_color=COR_SIDEBAR_ATIVO, font=FONT_BTN,
                                              height=45, corner_radius=8, anchor="w", command=lambda: self.mostrar_frame(self.frame_cadastro, self.btn_nav_cadastro))
@@ -197,7 +192,6 @@ class OtecaModernApp:
                                              height=45, corner_radius=8, anchor="w", command=lambda: self.mostrar_frame(self.frame_consulta, self.btn_nav_consulta))
         self.btn_nav_consulta.pack(fill="x", pady=4, padx=12)
 
-        # Container Principal
         self.main_content = ctk.CTkFrame(self.root, fg_color=COR_FUNDO_GERAL, corner_radius=0)
         self.main_content.pack(side="right", fill="both", expand=True, padx=40, pady=10)
 
@@ -222,14 +216,12 @@ class OtecaModernApp:
         lbl_secao = ctk.CTkLabel(self.frame_cadastro, text="Cadastro de Livros no Acervo", font=("Segoe UI Light", 18), text_color=COR_TEXTO_MAIN, anchor="w")
         lbl_secao.pack(fill="x", pady=(10, 15))
         
-        # O Card Central em CustomTkinter com cantos arredondados nativos de alta qualidade!
         card = ctk.CTkFrame(self.frame_cadastro, fg_color=COR_CARD_BG, corner_radius=12, border_color="#E1DCD6", border_width=1)
         card.pack(fill="x", anchor="n", ipady=15)
 
         form_frame = ctk.CTkFrame(card, fg_color=COR_CARD_BG)
         form_frame.pack(fill="x", padx=35, pady=30)
 
-        # Divisão em duas colunas simétricas
         col1 = ctk.CTkFrame(form_frame, fg_color=COR_CARD_BG)
         col1.pack(side="left", fill="x", expand=True, padx=(0, 20))
         
@@ -251,7 +243,6 @@ class OtecaModernApp:
         frame_qtd, self.ent_qtd = self.criar_input_moderno(col2, "Quantidade de Exemplares:", "📚")
         frame_qtd.pack(fill="x")
         
-        # Bloco de Anexo Customizado de Acordo com o Mockup Web
         capa_frame = ctk.CTkFrame(col2, fg_color=COR_CARD_BG)
         capa_frame.pack(fill="x")
         ctk.CTkLabel(capa_frame, text="🖼  Capa do Livro (.png):", font=FONT_LABEL, text_color=COR_TEXTO_MUTED, anchor="w").pack(fill="x")
@@ -267,7 +258,7 @@ class OtecaModernApp:
                                    height=30, corner_radius=6, font=("Segoe UI", 10, "bold"), command=self.selecionar_capa)
         btn_upload.pack(side="right")
 
-        # Botão Principal Macio e Moderno
+
         btn_confirmar = ctk.CTkButton(card, text="Confirmar Cadastro do Livro", fg_color=COR_AZUL_BOTON,
                                      hover_color=COR_AZUL_HOVER, font=FONT_BTN, text_color="white",
                                      height=45, corner_radius=8, command=self.cadastrar_livro)
@@ -315,7 +306,6 @@ class OtecaModernApp:
         display_frame = ctk.CTkFrame(self.frame_consulta, fg_color=COR_FUNDO_GERAL)
         display_frame.pack(fill="both", expand=True)
 
-        # Caixa de texto nativa do CustomTkinter com scroll suave e bordas arredondadas incorporadas
         self.txt_output_box = ctk.CTkTextbox(display_frame, fg_color="white", text_color=COR_TEXTO_MAIN, font=FONT_TEXT, border_color="#E1DCD6", border_width=1, corner_radius=10, activate_scrollbars=True)
         self.txt_output_box.pack(side="left", fill="both", expand=True, padx=(0, 20))
         self.txt_output_box.insert(tk.END, "Os relatórios do acervo e dados das buscas detalhadas aparecerão nesta caixa de texto.")

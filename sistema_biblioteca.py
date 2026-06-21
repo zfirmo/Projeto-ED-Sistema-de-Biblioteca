@@ -139,10 +139,11 @@ class Tabela_Hash:
             
             anterior = atual
             atual = atual.proximo
-            
+
         return False
 
 class Fila:
+
     def __init__(self):
         self.inicio = None
         self.fim = None
@@ -151,46 +152,68 @@ class Fila:
         return self.inicio is None
 
     def enfileirar(self, usuario: Usuario):
+
         novo_node = Usuario_Node(usuario)
+
         if self.esta_vazia():
+
             self.inicio = novo_node
             self.fim = novo_node
+
         else:
             self.fim.proximo = novo_node
             self.fim = novo_node
         print(f"Usuário '{usuario.nome_usuario}' adicionado à fila de espera.")
 
     def desenfileirar(self):
+
         if self.esta_vazia():
+
             print("A fila de espera está vazia.")
+
             return None
+        
         usuario_atendido = self.inicio.usuario.nome_usuario
         self.inicio = self.inicio.proximo
+
         if self.inicio is None:
+
             self.fim = None
+
         return usuario_atendido
 
     def remover_usuario_da_fila(self, nome_usuario):
-        """Remove um usuário específico de qualquer posição da fila (útil para o desfazer)"""
+
         if self.esta_vazia():
+
             return False
         
         atual = self.inicio
         anterior = None
         
         while atual is not None:
+
             if atual.usuario.nome_usuario == nome_usuario:
-                if anterior is None:  # Era o primeiro da fila
+
+                if anterior is None:  
+
                     self.inicio = atual.proximo
+
                     if self.inicio is None:
+
                         self.fim = None
                 else:
+
                     anterior.proximo = atual.proximo
-                    if atual == self.fim:  # Era o último da fila
+                    if atual == self.fim:  
+
                         self.fim = anterior
+
                 return True
+            
             anterior = atual
             atual = atual.proximo
+
         return False
 
 class Pilha:
@@ -249,10 +272,13 @@ class Lista_Encadeada:
         return True
 
 class Arvore_Binaria:
+
     def __init__(self):
+
         self.raiz = None
 
     def inserir(self, livro):
+
         novo_node = Livro_Node(livro)
         if self.raiz is None:
             self.raiz = novo_node
@@ -260,6 +286,7 @@ class Arvore_Binaria:
             self._inserir_recursivo(self.raiz, novo_node)
 
     def _inserir_recursivo(self, node_atual, novo_node):
+
         if str(novo_node.livro.titulo).lower() < str(node_atual.livro.titulo).lower():
             if node_atual.esquerda is None:
                 node_atual.esquerda = novo_node
@@ -272,6 +299,7 @@ class Arvore_Binaria:
                 self._inserir_recursivo(node_atual.direita, novo_node)
 
     def buscar_nodo_recursivo(self, node_atual, titulo):
+
         if node_atual is None:
             return None
         if str(titulo).lower() == str(node_atual.livro.titulo).lower():
@@ -281,19 +309,21 @@ class Arvore_Binaria:
         return self.buscar_nodo_recursivo(node_atual.direita, titulo)
 
     def percorrer_em_ordem(self, node_atual):
+
         if node_atual is not None:
             self.percorrer_em_ordem(node_atual.esquerda)
             print(f"Título: {node_atual.livro.titulo} | Autor: {node_atual.livro.autor} | ISBN: {node_atual.livro.isbn} | Qtd: {node_atual.livro.qtd_exemplares}")
             self.percorrer_em_ordem(node_atual.direita)
 
     def remover_por_titulo(self, titulo):
+
         self.raiz = self._remover_recursivo(self.raiz, titulo)
 
     def _remover_recursivo(self, node_atual, titulo):
+
         if node_atual is None:
             return None
         if str(titulo).lower() < str(node_atual.livro.titulo).lower():
-            # CORRIGIDO: de _remover_remover_recursivo para _remover_recursivo
             node_atual.esquerda = self._remover_recursivo(node_atual.esquerda, titulo)
         elif str(titulo).lower() > str(node_atual.livro.titulo).lower():
             node_atual.direita = self._remover_recursivo(node_atual.direita, titulo)
@@ -308,11 +338,11 @@ class Arvore_Binaria:
         return node_atual
 
     def _encontrar_minimo(self, nodo):
+
         atual = nodo
         while atual.esquerda is not None:
             atual = atual.esquerda
         return atual
-
 
 class Biblioteca:
     def __init__(self):
@@ -361,7 +391,6 @@ class Biblioteca:
             if nodo_da_fila:
                 novo_usuario = Usuario(nome_usuario)
                 nodo_da_fila.fila_espera.enfileirar(novo_usuario)
-                # CORRIGIDO: Adicionada a entrada da fila na Pilha de histórico para permitir o Desfazer
                 self.historico_emprestimos.empilhar("ENTROU_FILA", isbn, nome_usuario)
             else:
                 print("Erro interno do sistema: Estrutura do livro na árvore não encontrada.")
