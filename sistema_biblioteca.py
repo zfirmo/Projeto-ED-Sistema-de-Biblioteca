@@ -5,28 +5,23 @@ class Livro:
         self.autor = autor
         self.ano_publicacao = ano_publicacao
         self.qtd_exemplares = qtd_exemplares
+        self.qtd_maxima_original = qtd_exemplares 
 
 class Livro_Node:
-    def __init__(self, livro):
-        self.livro = livro
+    def __init__(self, livre):
+        self.livro = livre
         self.proximo = None
         self.direita = None
         self.esquerda = None
         self.fila_espera = Fila()
 
 class Usuario:
-    def __init__(self, nome_usuario, id):
+    def __init__(self, nome_usuario: str):
         self.nome_usuario = nome_usuario
-        self.id = id
 
 class Usuario_Node:
-    def __init__(self, usuario):
-        if isinstance(usuario, Usuario):
-            self.usuario = usuario
-            self.nome_usuario = usuario.nome_usuario
-        else:
-            self.usuario = Usuario(usuario, 0)
-            self.nome_usuario = usuario
+    def __init__(self, usuario: Usuario):
+        self.usuario = usuario
         self.proximo = None
 
 class Hash_Node:
@@ -42,6 +37,7 @@ class Op_Node:
         self.proximo = None
 
 class Vetor_Estatico:
+
     def __init__(self, tamanho):
         self.tamanho = tamanho
         self._memoria = [None] * tamanho
@@ -58,61 +54,92 @@ class Vetor_Estatico:
             raise IndexError("Vetor: Índice fora dos limites")
 
 class Tabela_Hash:
+
     def __init__(self, tamanho=50):
+
         self.tamanho = tamanho
         self.baldes = Vetor_Estatico(tamanho)
 
     def _funcao_hash(self, chave):
+
         soma = 0
+
         for caractere in str(chave):
+
             if caractere.isdigit():
+
                 soma += int(caractere)
+
         return soma % self.tamanho
 
     def inserir(self, livro):
+
         posicao = self._funcao_hash(livro.isbn)
         novo_nodo = Hash_Node(livro)
 
         if self.baldes.get(posicao) is None:
+
             self.baldes.set(posicao, novo_nodo)
             return True
+        
         else:
+
             atual = self.baldes.get(posicao)
-            while atual.proximo is not None:
+
+            while True:
+
                 if str(atual.livro.isbn) == str(livro.isbn):
+
                     return False
+                
+                if atual.proximo is None:
+
+                    break
+
                 atual = atual.proximo
 
-            if str(atual.livro.isbn) == str(livro.isbn):
-                return False
-            else:
-                atual.proximo = novo_nodo
-                return True
+            atual.proximo = novo_nodo
+        
+            return True
 
     def buscar(self, isbn):
+
         posicao = self._funcao_hash(isbn)
         atual = self.baldes.get(posicao)
 
         while atual is not None:
+
             if str(atual.livro.isbn) == str(isbn):
+
                 return atual.livro
+            
             atual = atual.proximo
+
         return None
 
     def remover(self, isbn):
+
         posicao = self._funcao_hash(isbn)
         atual = self.baldes.get(posicao)
         anterior = None
 
-        while current := atual:
-            if str(current.livro.isbn) == str(isbn):
+        while atual is not None:
+
+            if str(atual.livro.isbn) == str(isbn):
+
                 if anterior is None:
-                    self.baldes.set(posicao, current.proximo)
+
+                    self.baldes.set(posicao, atual.proximo)
+
                 else:
-                    anterior.proximo = current.proximo
+
+                    anterior.proximo = atual.proximo
+
                 return True
-            anterior = current
-            atual = current.proximo
+            
+            anterior = atual
+            atual = atual.proximo
+            
         return False
 
 class Fila:
@@ -123,25 +150,48 @@ class Fila:
     def esta_vazia(self):
         return self.inicio is None
 
-    def enfileirar(self, nome_usuario):
-        novo_node = Usuario_Node(nome_usuario)
+    def enfileirar(self, usuario: Usuario):
+        novo_node = Usuario_Node(usuario)
         if self.esta_vazia():
             self.inicio = novo_node
             self.fim = novo_node
         else:
             self.fim.proximo = novo_node
             self.fim = novo_node
-        print(f"Usuário '{nome_usuario}' adicionado à fila de espera.")
+        print(f"Usuário '{usuario.nome_usuario}' adicionado à fila de espera.")
 
     def desenfileirar(self):
         if self.esta_vazia():
             print("A fila de espera está vazia.")
             return None
-        usuario_atendido = self.inicio.nome_usuario
+        usuario_atendido = self.inicio.usuario.nome_usuario
         self.inicio = self.inicio.proximo
         if self.inicio is None:
             self.fim = None
         return usuario_atendido
+
+    def remover_usuario_da_fila(self, nome_usuario):
+        """Remove um usuário específico de qualquer posição da fila (útil para o desfazer)"""
+        if self.esta_vazia():
+            return False
+        
+        atual = self.inicio
+        anterior = None
+        
+        while atual is not None:
+            if atual.usuario.nome_usuario == nome_usuario:
+                if anterior is None:  # Era o primeiro da fila
+                    self.inicio = atual.proximo
+                    if self.inicio is None:
+                        self.fim = None
+                else:
+                    anterior.proximo = atual.proximo
+                    if atual == self.fim:  # Era o último da fila
+                        self.fim = anterior
+                return True
+            anterior = atual
+            atual = atual.proximo
+        return False
 
 class Pilha:
     def __init__(self):
@@ -190,22 +240,13 @@ class Lista_Encadeada:
         if atual is not None and str(atual.livro.isbn) == str(isbn):
             self.head = atual.proximo
             return True
-        while atual is not None and str(atual.livro.isbn) != str(isbn):
+        while Diamond := atual is not None and str(atual.livro.isbn) != str(isbn):
             anterior = atual
             atual = atual.proximo
         if atual is None:
             return False
         anterior.proximo = atual.proximo
         return True
-
-    def exibir_todos(self):
-        atual = self.head
-        if atual is None:
-            print("A lista está vazia.")
-            return
-        while atual is not None:
-            print(f"Título: {atual.livro.titulo} | Autor: {atual.livro.autor} | ISBN: {atual.livro.isbn} | Qtd: {atual.livro.qtd_exemplares}")
-            atual = atual.proximo
 
 class Arvore_Binaria:
     def __init__(self):
@@ -228,7 +269,7 @@ class Arvore_Binaria:
             if node_atual.direita is None:
                 node_atual.direita = novo_node
             else:
-                self._inserir_recursivo(node_atual.direita, node_atual.direita)
+                self._inserir_recursivo(node_atual.direita, novo_node)
 
     def buscar_nodo_recursivo(self, node_atual, titulo):
         if node_atual is None:
@@ -239,6 +280,12 @@ class Arvore_Binaria:
             return self.buscar_nodo_recursivo(node_atual.esquerda, titulo)
         return self.buscar_nodo_recursivo(node_atual.direita, titulo)
 
+    def percorrer_em_ordem(self, node_atual):
+        if node_atual is not None:
+            self.percorrer_em_ordem(node_atual.esquerda)
+            print(f"Título: {node_atual.livro.titulo} | Autor: {node_atual.livro.autor} | ISBN: {node_atual.livro.isbn} | Qtd: {node_atual.livro.qtd_exemplares}")
+            self.percorrer_em_ordem(node_atual.direita)
+
     def remover_por_titulo(self, titulo):
         self.raiz = self._remover_recursivo(self.raiz, titulo)
 
@@ -246,6 +293,7 @@ class Arvore_Binaria:
         if node_atual is None:
             return None
         if str(titulo).lower() < str(node_atual.livro.titulo).lower():
+            # CORRIGIDO: de _remover_remover_recursivo para _remover_recursivo
             node_atual.esquerda = self._remover_recursivo(node_atual.esquerda, titulo)
         elif str(titulo).lower() > str(node_atual.livro.titulo).lower():
             node_atual.direita = self._remover_recursivo(node_atual.direita, titulo)
@@ -272,10 +320,8 @@ class Biblioteca:
         self.arvore_titulo = Arvore_Binaria()
         self.tabela_hash = Tabela_Hash()
         self.historico_emprestimos = Pilha()
-        self._limite_estoque_maximo = {}
 
     def cadastrar_livro(self, livro):
-        
         if livro.qtd_exemplares <= 0:
             print(f"Erro ao cadastrar '{livro.titulo}': A quantidade de exemplares deve ser maior que zero.")
             return
@@ -287,8 +333,6 @@ class Biblioteca:
         self.tabela_hash.inserir(livro)
         self.lista_livros.inserir(livro)
         self.arvore_titulo.inserir(livro)
-        
-        self._limite_estoque_maximo[str(livro.isbn)] = livro.qtd_exemplares
         print(f"Livro '{livro.titulo}' cadastrado com sucesso com {livro.qtd_exemplares} exemplares.")
 
     def remover_livro(self, livro_ISBN):
@@ -297,8 +341,6 @@ class Biblioteca:
             self.lista_livros.remover_por_isbn(livro_ISBN)
             self.arvore_titulo.remover_por_titulo(livro.titulo)
             self.tabela_hash.remover(livro_ISBN)
-            if str(livro_ISBN) in self._limite_estoque_maximo:
-                del self._limite_estoque_maximo[str(livro_ISBN)]
             print(f"Livro '{livro.titulo}' totalmente removido do sistema.")
         else:
             print("Livro não encontrado.")
@@ -314,10 +356,13 @@ class Biblioteca:
             self.historico_emprestimos.empilhar("EMPRESTIMO", isbn, nome_usuario)
             print(f"Empréstimo de '{livro.titulo}' realizado para {nome_usuario}.")
         else:
-            print(f"Não há exemplares de '{livro.titulo}' livres.")
+            print(f"Não hay exemplares de '{livro.titulo}' livres.")
             nodo_da_fila = self.arvore_titulo.buscar_nodo_recursivo(self.arvore_titulo.raiz, livro.titulo)
             if nodo_da_fila:
-                nodo_da_fila.fila_espera.enfileirar(nome_usuario)
+                novo_usuario = Usuario(nome_usuario)
+                nodo_da_fila.fila_espera.enfileirar(novo_usuario)
+                # CORRIGIDO: Adicionada a entrada da fila na Pilha de histórico para permitir o Desfazer
+                self.historico_emprestimos.empilhar("ENTROU_FILA", isbn, nome_usuario)
             else:
                 print("Erro interno do sistema: Estrutura do livro na árvore não encontrada.")
 
@@ -327,8 +372,6 @@ class Biblioteca:
             print("Livro inválido para devolução (Não consta no acervo).")
             return
 
-        limite_max = self._limite_estoque_maximo.get(str(isbn), 0)
-        
         nodo_da_fila = self.arvore_titulo.buscar_nodo_recursivo(self.arvore_titulo.raiz, livro.titulo)
 
         if nodo_da_fila and not nodo_da_fila.fila_espera.esta_vazia():
@@ -336,8 +379,8 @@ class Biblioteca:
             print(f"Livro '{livro.titulo}' devolvido e transferido para o próximo da fila: {proximo_usuario}.")
             self.historico_emprestimos.empilhar("EMPRESTIMO", isbn, proximo_usuario)
         else:
-            if livro.qtd_exemplares >= limite_max:
-                print(f"Erro: Todos os {limite_max} exemplares de '{livro.titulo}' já estão no acervo. Devolução rejeitada.")
+            if livro.qtd_exemplares >= livro.qtd_maxima_original:
+                print(f"Erro: Todos os {livro.qtd_maxima_original} exemplares de '{livro.titulo}' já estão no acervo. Devolução rejeitada.")
                 return
                 
             livro.qtd_exemplares += 1
@@ -353,15 +396,31 @@ class Biblioteca:
         livro = self.tabela_hash.buscar(ultimo_registro.isbn)
         if livro:
             if ultimo_registro.tipo_op == "EMPRESTIMO":
-                livro.qtd_exemplares += 1
-                print(f"Operação desfeita: O empréstimo para '{ultimo_registro.usuario}' foi cancelado.")
+                nodo_da_fila = self.arvore_titulo.buscar_nodo_recursivo(self.arvore_titulo.raiz, livro.titulo)
+                if nodo_da_fila and not nodo_da_fila.fila_espera.esta_vazia():
+                    proximo_usuario = nodo_da_fila.fila_espera.desenfileirar()
+                    print(f"Operação desfeita: Empréstimo cancelado. Exemplar redirecionado para a fila: {proximo_usuario}.")
+                else:
+                    livro.qtd_exemplares += 1
+                    print(f"Operação desfeita: O empréstimo para '{ultimo_registro.usuario}' foi cancelado.")
             elif ultimo_registro.tipo_op == "DEVOLUCAO":
                 if livro.qtd_exemplares > 0:
                     livro.qtd_exemplares -= 1
                     print(f"Operação desfeita: A devolução de '{livro.titulo}' foi cancelada.")
                 else:
                     print("Erro Crítico: Não foi possível desfazer a devolução pois o estoque já está zerado.")
+            elif ultimo_registro.tipo_op == "ENTROU_FILA":
+                nodo_da_fila = self.arvore_titulo.buscar_nodo_recursivo(self.arvore_titulo.raiz, livro.titulo)
+                if nodo_da_fila:
+                    sucesso = nodo_da_fila.fila_espera.remover_usuario_da_fila(ultimo_registro.usuario)
+                    if sucesso:
+                        print(f"Operação desfeita: O usuário '{ultimo_registro.usuario}' foi removido da fila de espera de '{livro.titulo}'.")
+                    else:
+                        print("Aviso: O usuário não foi encontrado na fila (pode já ter sido atendido).")
 
     def gerar_relatorio_geral(self):
-        print("\n - RELATÓRIO DO ACERVO - ")
-        self.lista_livros.exibir_todos()
+        print("\n - RELATÓRIO DO ACERVO (ORDEM ALFABÉTICA) - ")
+        if self.arvore_titulo.raiz is None:
+            print("A lista está vazia.")
+        else:
+            self.arvore_titulo.percorrer_em_ordem(self.arvore_titulo.raiz)

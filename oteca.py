@@ -1,26 +1,36 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox, scrolledtext
+from tkinter import filedialog, messagebox
+import customtkinter as ctk
+from PIL import Image
 import io
 import sys
 import os
 import shutil
 import datetime
-from sistema_biblioteca import Biblioteca, Livro
+from sistema_biblioteca import Biblioteca, Livro, Vetor_Estatico
 
-COR_BEGE = "#FDFBF7"          
-COR_LOCO_BG = "#FFFFFF"       
-COR_MARROM = "#5C4033"        
-COR_MARROM_ESCURO = "#3E2A21" 
-COR_AZUL = "#004AAD"          
-COR_AZUL_HOVER = "#003380"
-COR_VERMELHO = "#B22222"      
-COR_VERMELHO_HOVER = "#8B0000"
-COR_TEXTO_INPUT = "#333333"
+ctk.set_appearance_mode("Light") 
+ctk.set_default_color_theme("blue")
 
-FONT_TITLE = ("Segoe UI", 16, "bold")
-FONT_SUBTITLE = ("Segoe UI", 12, "bold")
+COR_FUNDO_GERAL = "#C8AB92"     
+COR_CARD_BG = "#FFFFFF"         
+COR_SIDEBAR = "#A8998E"         
+COR_SIDEBAR_ATIVO = "#4A3B32"  
+COR_TEXTO_MAIN = "#1A1A1A"      
+COR_TEXTO_MUTED = "#5E544F"    
+COR_LINHA_INPUT = "#B0A6A0"     
+COR_AZUL_BOTON = "#4C6B9C"      
+COR_AZUL_HOVER = "#3B537A"      
+COR_VERMELHO = "#C95A5A"        
+COR_VERMELHO_HOVER = "#A84444"  
+
+FONT_TITLE = ("Segoe UI", 18, "bold")
+FONT_LABEL = ("Segoe UI", 11)   
 FONT_TEXT = ("Segoe UI", 11)
-FONT_BTN = ("Segoe UI", 11, "bold")
+FONT_BTN = ("Segoe UI", 12, "bold")
+
+
+# ESTRUTURAS DE DADOS
 
 class NodeSimples:
     def __init__(self, valor):
@@ -60,7 +70,7 @@ class NodeMapa:
 class Tabela_Hash_Capas:
     def __init__(self, tamanho=50):
         self.tamanho = tamanho
-        self.baldes = [None] * tamanho
+        self.baldes = Vetor_Estatico(tamanho)
 
     def _hash(self, chave):
         soma = sum(ord(c) for c in str(chave))
@@ -69,23 +79,22 @@ class Tabela_Hash_Capas:
     def put(self, chave, valor):
         pos = self._hash(chave)
         novo = NodeMapa(chave, valor)
-        if self.baldes[pos] is None:
-            self.baldes[pos] = novo
+        if self.baldes.get(pos) is None:
+            self.baldes.set(pos, novo)
         else:
-            atual = self.baldes[pos]
-            while atual.proximo is not None:
+            atual = self.baldes.get(pos)
+            while True:
                 if str(atual.chave) == str(chave):
                     atual.valor = valor
                     return
+                if atual.proximo is None:
+                    break
                 atual = atual.proximo
-            if str(atual.chave) == str(chave):
-                atual.valor = valor
-            else:
-                atual.proximo = novo
+            atual.proximo = novo
 
     def get(self, chave):
         pos = self._hash(chave)
-        atual = self.baldes[pos]
+        atual = self.baldes.get(pos)
         while atual is not None:
             if str(atual.chave) == str(chave):
                 return atual.valor
@@ -96,22 +105,22 @@ class Tabela_Hash_Capas:
         return self.get(chave) is not None
 
 
+# APLICAÇÃO EM CUSTOMTKINTER
+
 class OtecaModernApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("OTECA - Sistema de Gerenciamento de Biblioteca")
-        self.root.geometry("1050x700")
-        self.root.configure(bg=COR_BEGE)
+        self.root.title("OTECA - Sistema de Biblioteca")
+        self.root.geometry("1180x750")
+        self.root.configure(fg_color=COR_FUNDO_GERAL)
         
         self.biblio = Biblioteca()
-        
         self.historico_acoes = Lista_Encadeada_Historico()
-        self.registrar_acao("Sistema iniciado.")
+        self.registrar_acao("Sistema iniciado com CustomTkinter.")
         
         self.capas_db = Tabela_Hash_Capas()
-        
-        self.capa_temp_path = None 
-        self.img_ref_atual = None 
+        self.capa_temp_path = None
+        self.img_ref_atual = None
 
         self.criar_estruturas_principais()
         self.construir_tela_cadastro()
@@ -124,63 +133,84 @@ class OtecaModernApp:
         agora = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         self.historico_acoes.adicionar(f"[{agora}] {mensagem}")
 
-    def criar_botao(self, parent, text, bg_color, hover_color, command, fg="white"):
-        btn = tk.Button(parent, text=text, bg=bg_color, fg=fg, font=FONT_BTN, 
-                        relief="flat", cursor="hand2", command=command, padx=15, pady=8)
-        btn.bind("<Enter>", lambda e: btn.config(bg=hover_color))
-        btn.bind("<Leave>", lambda e: btn.config(bg=bg_color))
-        return btn
-
-    def criar_input(self, parent, label_text):
-        bg_color = parent.cget("bg")
-        frame = tk.Frame(parent, bg=bg_color)
-        tk.Label(frame, text=label_text, bg=bg_color, fg=COR_MARROM, font=FONT_TEXT).pack(anchor="w")
-        entry = tk.Entry(frame, font=FONT_TEXT, fg=COR_TEXTO_INPUT, bg="white", relief="solid", bd=1)
-        entry.pack(fill="x", pady=(2, 10), ipady=4)
+    def criar_input_moderno(self, parent, label_text, icone=""):
+        frame = ctk.CTkFrame(parent, fg_color=COR_CARD_BG)
+        
+        texto_label = f"{icone}  {label_text}" if icone else label_text
+        lbl = ctk.CTkLabel(frame, text=texto_label, font=FONT_LABEL, text_color=COR_TEXTO_MUTED, anchor="w")
+        lbl.pack(fill="x", pady=(0, 4))
+        
+        # Entrada no estilo "BorderBottom" simulada perfeitamente sumindo com as outras bordas
+        entry = ctk.CTkEntry(frame, font=FONT_TEXT, text_color=COR_TEXTO_MAIN, fg_color=COR_CARD_BG, 
+                             border_color=COR_LINHA_INPUT, border_width=1, height=35, corner_radius=6)
+        entry.pack(fill="x", pady=(0, 18))
+        
         return frame, entry
 
     def criar_estruturas_principais(self):
-        self.header = tk.Frame(self.root, bg=COR_LOCO_BG, height=90, bd=1, relief="groove")
+        # Header Superior Totalmente Flat
+        self.header = ctk.CTkFrame(self.root, fg_color=COR_FUNDO_GERAL, height=100, corner_radius=0)
         self.header.pack(side="top", fill="x")
         self.header.pack_propagate(False)
         
-        logo_container = tk.Frame(self.header, bg=COR_LOCO_BG)
+        logo_container = ctk.CTkFrame(self.header, fg_color=COR_FUNDO_GERAL)
         logo_container.pack(expand=True)
         
         try:
-            self.logo_img = tk.PhotoImage(file="oteca_logo.png").subsample(5, 5)
-            tk.Label(logo_container, image=self.logo_img, bg=COR_LOCO_BG).pack(side="left", padx=10)
-        except Exception:
-            tk.Label(logo_container, text="OTECA", bg=COR_LOCO_BG, fg=COR_MARROM, font=("Segoe UI", 24, "bold")).pack(side="left", padx=10)
+            imagem_pil = Image.open("oteca_logo.png") 
+            self.logo_ctk = ctk.CTkImage(light_image=imagem_pil, dark_image=imagem_pil, size=(250, 250))
+            
+            # 2. Cria o label usando 'image=' em vez de 'text='
+            lbl_logo = ctk.CTkLabel(logo_container, image=self.logo_ctk, text="")
+            lbl_logo.pack(anchor="center")
+        except Exception as e:
+            print(f"Erro ao carregar logo: {e}")
+            # Fallback caso a imagem não carregue
+            lbl_brand = ctk.CTkLabel(logo_container, text="OTECA 📚", text_color=COR_SIDEBAR_ATIVO, font=("Segoe UI", 28, "bold"))
+            lbl_brand.pack(anchor="center")
+        # ----------------------------
 
-        self.sidebar = tk.Frame(self.root, bg=COR_MARROM, width=240)
+        lbl_subbrand = ctk.CTkLabel(logo_container, text="Sistema de Gerenciamento de Biblioteca", text_color=COR_TEXTO_MUTED, font=("Segoe UI", 11))
+        lbl_subbrand.pack(anchor="center")
+
+        # Sidebar Lateral Moderna
+        self.sidebar = ctk.CTkFrame(self.root, fg_color=COR_SIDEBAR, width=250, corner_radius=0)
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
         
-        tk.Label(self.sidebar, text="NAVEGAÇÃO", bg=COR_MARROM, fg=COR_BEGE, font=("Segoe UI", 10, "bold")).pack(pady=(20, 10), padx=15, anchor="w")
+        lbl_nav = ctk.CTkLabel(self.sidebar, text="NAVEGAÇÃO", text_color="#F4EFEA", font=("Segoe UI", 10, "bold"), anchor="w")
+        lbl_nav.pack(pady=(40, 15), padx=25, fill="x")
 
-        self.btn_nav_cadastro = self.criar_botao(self.sidebar, "Cadastrar Livro", COR_MARROM, COR_MARROM_ESCURO, lambda: self.mostrar_frame(self.frame_cadastro, self.btn_nav_cadastro), COR_BEGE)
-        self.btn_nav_cadastro.pack(fill="x", pady=2, padx=10)
+        # CustomTkinter Buttons com Cantos Arredondados
+        self.btn_nav_cadastro = ctk.CTkButton(self.sidebar, text="  📋   Cadastrar Livro", fg_color=COR_SIDEBAR, 
+                                             text_color="#ECE6E1", hover_color=COR_SIDEBAR_ATIVO, font=FONT_BTN,
+                                             height=45, corner_radius=8, anchor="w", command=lambda: self.mostrar_frame(self.frame_cadastro, self.btn_nav_cadastro))
+        self.btn_nav_cadastro.pack(fill="x", pady=4, padx=12)
 
-        self.btn_nav_emprestimo = self.criar_botao(self.sidebar, "Empréstimos", COR_MARROM, COR_MARROM_ESCURO, lambda: self.mostrar_frame(self.frame_emprestimo, self.btn_nav_emprestimo), COR_BEGE)
-        self.btn_nav_emprestimo.pack(fill="x", pady=2, padx=10)
+        self.btn_nav_emprestimo = ctk.CTkButton(self.sidebar, text="  ⇄   Empréstimos", fg_color=COR_SIDEBAR, 
+                                               text_color="#ECE6E1", hover_color=COR_SIDEBAR_ATIVO, font=FONT_BTN,
+                                               height=45, corner_radius=8, anchor="w", command=lambda: self.mostrar_frame(self.frame_emprestimo, self.btn_nav_emprestimo))
+        self.btn_nav_emprestimo.pack(fill="x", pady=4, padx=12)
 
-        self.btn_nav_consulta = self.criar_botao(self.sidebar, "Consultar Acervo", COR_MARROM, COR_MARROM_ESCURO, lambda: self.mostrar_frame(self.frame_consulta, self.btn_nav_consulta), COR_BEGE)
-        self.btn_nav_consulta.pack(fill="x", pady=2, padx=10)
+        self.btn_nav_consulta = ctk.CTkButton(self.sidebar, text="  ⌕   Consultar Acervo", fg_color=COR_SIDEBAR, 
+                                             text_color="#ECE6E1", hover_color=COR_SIDEBAR_ATIVO, font=FONT_BTN,
+                                             height=45, corner_radius=8, anchor="w", command=lambda: self.mostrar_frame(self.frame_consulta, self.btn_nav_consulta))
+        self.btn_nav_consulta.pack(fill="x", pady=4, padx=12)
 
-        self.main_content = tk.Frame(self.root, bg=COR_BEGE)
-        self.main_content.pack(side="right", fill="both", expand=True, padx=25, pady=25)
+        # Container Principal
+        self.main_content = ctk.CTkFrame(self.root, fg_color=COR_FUNDO_GERAL, corner_radius=0)
+        self.main_content.pack(side="right", fill="both", expand=True, padx=40, pady=10)
 
-        self.frame_cadastro = tk.Frame(self.main_content, bg=COR_BEGE)
-        self.frame_emprestimo = tk.Frame(self.main_content, bg=COR_BEGE)
-        self.frame_consulta = tk.Frame(self.main_content, bg=COR_BEGE)
+        self.frame_cadastro = ctk.CTkFrame(self.main_content, fg_color=COR_FUNDO_GERAL)
+        self.frame_emprestimo = ctk.CTkFrame(self.main_content, fg_color=COR_FUNDO_GERAL)
+        self.frame_consulta = ctk.CTkFrame(self.main_content, fg_color=COR_FUNDO_GERAL)
 
     def mostrar_frame(self, frame_alvo, botao_ativo):
-        self.btn_nav_cadastro.config(bg=COR_MARROM)
-        self.btn_nav_emprestimo.config(bg=COR_MARROM)
-        self.btn_nav_consulta.config(bg=COR_MARROM)
+        self.btn_nav_cadastro.configure(fg_color=COR_SIDEBAR, text_color="#ECE6E1")
+        self.btn_nav_emprestimo.configure(fg_color=COR_SIDEBAR, text_color="#ECE6E1")
+        self.btn_nav_consulta.configure(fg_color=COR_SIDEBAR, text_color="#ECE6E1")
         
-        botao_ativo.config(bg=COR_MARROM_ESCURO)
+        botao_ativo.configure(fg_color=COR_SIDEBAR_ATIVO, text_color="white")
         
         self.frame_cadastro.pack_forget()
         self.frame_emprestimo.pack_forget()
@@ -189,110 +219,130 @@ class OtecaModernApp:
         frame_alvo.pack(fill="both", expand=True)
 
     def construir_tela_cadastro(self):
-        tk.Label(self.frame_cadastro, text="Cadastro de Livros no Acervo", font=FONT_TITLE, bg=COR_BEGE, fg=COR_MARROM).pack(anchor="w", pady=(0, 15))
+        lbl_secao = ctk.CTkLabel(self.frame_cadastro, text="Cadastro de Livros no Acervo", font=("Segoe UI Light", 18), text_color=COR_TEXTO_MAIN, anchor="w")
+        lbl_secao.pack(fill="x", pady=(10, 15))
         
-        card = tk.Frame(self.frame_cadastro, bg="white", bd=1, relief="solid", padx=20, pady=20)
-        card.pack(fill="x", pady=10)
+        # O Card Central em CustomTkinter com cantos arredondados nativos de alta qualidade!
+        card = ctk.CTkFrame(self.frame_cadastro, fg_color=COR_CARD_BG, corner_radius=12, border_color="#E1DCD6", border_width=1)
+        card.pack(fill="x", anchor="n", ipady=15)
 
-        form_frame = tk.Frame(card, bg="white")
-        form_frame.pack(fill="x")
+        form_frame = ctk.CTkFrame(card, fg_color=COR_CARD_BG)
+        form_frame.pack(fill="x", padx=35, pady=30)
 
-        col1 = tk.Frame(form_frame, bg="white")
-        col1.pack(side="left", fill="x", expand=True, padx=(0, 15))
+        # Divisão em duas colunas simétricas
+        col1 = ctk.CTkFrame(form_frame, fg_color=COR_CARD_BG)
+        col1.pack(side="left", fill="x", expand=True, padx=(0, 20))
         
-        frame_isbn, self.ent_isbn = self.criar_input(col1, "ISBN (Código de Barras):")
+        frame_isbn, self.ent_isbn = self.criar_input_moderno(col1, "ISBN (Código de Barras):", "║▌║")
         frame_isbn.pack(fill="x")
         
-        frame_titulo, self.ent_titulo = self.criar_input(col1, "Título do Livro:")
+        frame_titulo, self.ent_titulo = self.criar_input_moderno(col1, "Título do Livro:", "📖")
         frame_titulo.pack(fill="x")
         
-        frame_autor, self.ent_autor = self.criar_input(col1, "Autor:")
+        frame_autor, self.ent_autor = self.criar_input_moderno(col1, "Autor Principal:", "👥")
         frame_autor.pack(fill="x")
 
-        col2 = tk.Frame(form_frame, bg="white")
-        col2.pack(side="right", fill="x", expand=True, padx=(15, 0))
+        col2 = ctk.CTkFrame(form_frame, fg_color=COR_CARD_BG)
+        col2.pack(side="right", fill="x", expand=True, padx=(20, 0))
         
-        frame_ano, self.ent_ano = self.criar_input(col2, "Ano de Publicação:")
+        frame_ano, self.ent_ano = self.criar_input_moderno(col2, "Ano de Publicação:", "📅")
         frame_ano.pack(fill="x")
         
-        frame_qtd, self.ent_qtd = self.criar_input(col2, "Quantidade de Exemplares:")
+        frame_qtd, self.ent_qtd = self.criar_input_moderno(col2, "Quantidade de Exemplares:", "📚")
         frame_qtd.pack(fill="x")
         
-        capa_frame = tk.Frame(col2, bg="white")
-        capa_frame.pack(fill="x", pady=(5, 0))
-        tk.Label(capa_frame, text="Capa do Livro (.png):", bg="white", fg=COR_MARROM, font=FONT_TEXT).pack(anchor="w")
-        self.lbl_capa_status = tk.Label(capa_frame, text="Nenhuma capa anexada", bg="white", fg="#777777", font=("Segoe UI", 9, "italic"))
+        # Bloco de Anexo Customizado de Acordo com o Mockup Web
+        capa_frame = ctk.CTkFrame(col2, fg_color=COR_CARD_BG)
+        capa_frame.pack(fill="x")
+        ctk.CTkLabel(capa_frame, text="🖼  Capa do Livro (.png):", font=FONT_LABEL, text_color=COR_TEXTO_MUTED, anchor="w").pack(fill="x")
+        
+        status_container = ctk.CTkFrame(capa_frame, fg_color=COR_CARD_BG)
+        status_container.pack(fill="x", pady=(4, 0))
+        
+        self.lbl_capa_status = ctk.CTkLabel(status_container, text="Nenhuma imagem anexada", text_color="#948A84", font=("Segoe UI", 10, "italic"))
         self.lbl_capa_status.pack(side="left", pady=5)
-        btn_upload = self.criar_botao(capa_frame, "Anexar Imagem", COR_MARROM, COR_MARROM_ESCURO, self.selecionar_capa)
-        btn_upload.config(padx=10, pady=2, font=("Segoe UI", 9, "bold"))
+        
+        btn_upload = ctk.CTkButton(status_container, text="Anexar Imagem", fg_color="white", text_color=COR_TEXTO_MUTED,
+                                   hover_color="#F4EFEA", border_color=COR_LINHA_INPUT, border_width=1,
+                                   height=30, corner_radius=6, font=("Segoe UI", 10, "bold"), command=self.selecionar_capa)
         btn_upload.pack(side="right")
 
-        self.criar_botao(card, "Confirmar Cadastro do Livro", COR_AZUL, COR_AZUL_HOVER, self.cadastrar_livro).pack(fill="x", pady=(20, 0))
+        # Botão Principal Macio e Moderno
+        btn_confirmar = ctk.CTkButton(card, text="Confirmar Cadastro do Livro", fg_color=COR_AZUL_BOTON,
+                                     hover_color=COR_AZUL_HOVER, font=FONT_BTN, text_color="white",
+                                     height=45, corner_radius=8, command=self.cadastrar_livro)
+        btn_confirmar.pack(fill="x", padx=35, pady=(0, 20))
 
     def construir_tela_emprestimo(self):
-        tk.Label(self.frame_emprestimo, text="Controle de Circulação (Empréstimos e Devoluções)", font=FONT_TITLE, bg=COR_BEGE, fg=COR_MARROM).pack(anchor="w", pady=(0, 15))
+        ctk.CTkLabel(self.frame_emprestimo, text="Controle de Circulação", font=("Segoe UI Light", 18), text_color=COR_TEXTO_MAIN, anchor="w").pack(fill="x", pady=(10, 15))
         
-        card = tk.Frame(self.frame_emprestimo, bg="white", bd=1, relief="solid", padx=20, pady=20)
-        card.pack(fill="x", pady=10)
+        card = ctk.CTkFrame(self.frame_emprestimo, fg_color=COR_CARD_BG, corner_radius=12, border_color="#E1DCD6", border_width=1)
+        card.pack(fill="x", anchor="n", padx=1, pady=1)
 
-        frame_emp_isbn, self.ent_emp_isbn = self.criar_input(card, "ISBN do Livro:")
+        fields_frame = ctk.CTkFrame(card, fg_color=COR_CARD_BG)
+        fields_frame.pack(fill="x", padx=35, pady=30)
+
+        frame_emp_isbn, self.ent_emp_isbn = self.criar_input_moderno(fields_frame, "ISBN do Livro:", "║▌║")
         frame_emp_isbn.pack(fill="x")
         
-        frame_emp_user, self.ent_emp_user = self.criar_input(card, "Nome do Usuário (Necessário apenas para Empréstimo):")
+        frame_emp_user, self.ent_emp_user = self.criar_input_moderno(fields_frame, "Nome do Usuário (Apenas para Empréstimos):", "👤")
         frame_emp_user.pack(fill="x")
 
-        btn_box = tk.Frame(card, bg="white")
-        btn_box.pack(fill="x", pady=(15, 0))
+        btn_box = ctk.CTkFrame(card, fg_color=COR_CARD_BG)
+        btn_box.pack(fill="x", padx=35, pady=(0, 30))
         
-        self.criar_botao(btn_box, "Realizar Empréstimo", COR_AZUL, COR_AZUL_HOVER, self.realizar_emprestimo).pack(side="left", padx=(0, 10))
-        self.criar_botao(btn_box, "Registrar Devolução", COR_AZUL, COR_AZUL_HOVER, self.realizar_devolucao).pack(side="left", padx=(0, 10))
-        self.criar_botao(btn_box, "Desfazer Última Operação", COR_VERMELHO, COR_VERMELHO_HOVER, self.desfazer_emprestimo).pack(side="right")
+        ctk.CTkButton(btn_box, text="Realizar Empréstimo", fg_color=COR_AZUL_BOTON, hover_color=COR_AZUL_HOVER, font=FONT_BTN, height=40, corner_radius=8, command=self.realizar_emprestimo).pack(side="left", padx=(0, 15))
+        ctk.CTkButton(btn_box, text="Registrar Devolução", fg_color=COR_AZUL_BOTON, hover_color=COR_AZUL_HOVER, font=FONT_BTN, height=40, corner_radius=8, command=self.realizar_devolucao).pack(side="left", padx=(0, 15))
+        ctk.CTkButton(btn_box, text="Desfazer Última Operação", fg_color=COR_VERMELHO, hover_color=COR_VERMELHO_HOVER, font=FONT_BTN, height=40, corner_radius=8, command=self.desfazer_emprestimo).pack(side="right")
 
     def construir_tela_consulta(self):
-        tk.Label(self.frame_consulta, text="Consulta de Informações e Relatórios", font=FONT_TITLE, bg=COR_BEGE, fg=COR_MARROM).pack(anchor="w", pady=(0, 10))
+        ctk.CTkLabel(self.frame_consulta, text="Consulta de Informações", font=("Segoe UI Light", 18), text_color=COR_TEXTO_MAIN, anchor="w").pack(fill="x", pady=(10, 15))
         
-        search_card = tk.Frame(self.frame_consulta, bg="white", bd=1, relief="solid", padx=15, pady=15)
-        search_card.pack(fill="x", pady=(0, 15))
+        search_card = ctk.CTkFrame(self.frame_consulta, fg_color=COR_CARD_BG, corner_radius=12, border_color="#E1DCD6", border_width=1)
+        search_card.pack(fill="x", pady=(0, 20), anchor="n")
         
-        frame_in, self.ent_busca_isbn = self.criar_input(search_card, "Insira o ISBN para pesquisa ou remoção:")
-        frame_in.pack(side="left", fill="x", expand=True, padx=(0, 15))
+        frame_in, self.ent_busca_isbn = self.criar_input_moderno(search_card, "Insira o ISBN para pesquisar ou remover:", "⌕")
+        frame_in.pack(side="left", fill="x", expand=True, padx=25, pady=20)
         
-        self.criar_botao(search_card, "Buscar Livro", COR_AZUL, COR_AZUL_HOVER, self.buscar_e_exibir_livro).pack(side="left", padx=5, pady=(15,0))
-        self.criar_botao(search_card, "Remover", COR_VERMELHO, COR_VERMELHO_HOVER, self.remover_livro).pack(side="left", padx=5, pady=(15,0))
-        self.criar_botao(search_card, "Relatório Geral", COR_MARROM, COR_MARROM_ESCURO, self.gerar_relatorio_caixa).pack(side="left", padx=5, pady=(15,0))
-        self.criar_botao(search_card, "📄 Guardar Log (TXT)", COR_MARROM, COR_MARROM_ESCURO, self.guardar_log_txt).pack(side="left", padx=5, pady=(15,0))
+        btn_container = ctk.CTkFrame(search_card, fg_color=COR_CARD_BG)
+        btn_container.pack(side="right", padx=25, pady=(15, 0))
+        
+        ctk.CTkButton(btn_container, text="Buscar", fg_color=COR_AZUL_BOTON, hover_color=COR_AZUL_HOVER, height=36, width=90, corner_radius=6, command=self.buscar_e_exibir_livro).pack(side="left", padx=4)
+        ctk.CTkButton(btn_container, text="Remover", fg_color=COR_VERMELHO, hover_color=COR_VERMELHO_HOVER, height=36, width=90, corner_radius=6, command=self.remover_livro).pack(side="left", padx=4)
+        ctk.CTkButton(btn_container, text="Relatório", fg_color=COR_SIDEBAR, hover_color=COR_SIDEBAR_ATIVO, height=36, width=90, corner_radius=6, command=self.gerar_relatorio_caixa).pack(side="left", padx=4)
+        ctk.CTkButton(btn_container, text="Salvar Log", fg_color=COR_SIDEBAR, hover_color=COR_SIDEBAR_ATIVO, height=36, width=90, corner_radius=6, command=self.guardar_log_txt).pack(side="left", padx=4)
 
-        display_frame = tk.Frame(self.frame_consulta, bg=COR_BEGE)
+        display_frame = ctk.CTkFrame(self.frame_consulta, fg_color=COR_FUNDO_GERAL)
         display_frame.pack(fill="both", expand=True)
 
-        self.txt_output_box = scrolledtext.ScrolledText(display_frame, bg="white", fg=COR_TEXTO_INPUT, font=FONT_TEXT, bd=1, relief="solid")
-        self.txt_output_box.pack(side="left", fill="both", expand=True, padx=(0, 15))
+        # Caixa de texto nativa do CustomTkinter com scroll suave e bordas arredondadas incorporadas
+        self.txt_output_box = ctk.CTkTextbox(display_frame, fg_color="white", text_color=COR_TEXTO_MAIN, font=FONT_TEXT, border_color="#E1DCD6", border_width=1, corner_radius=10, activate_scrollbars=True)
+        self.txt_output_box.pack(side="left", fill="both", expand=True, padx=(0, 20))
         self.txt_output_box.insert(tk.END, "Os relatórios do acervo e dados das buscas detalhadas aparecerão nesta caixa de texto.")
-        self.txt_output_box.config(state=tk.DISABLED)
+        self.txt_output_box.configure(state="disabled")
 
-        self.right_capa_panel = tk.Frame(display_frame, bg="white", bd=1, relief="solid", width=220, padx=15, pady=15)
+        self.right_capa_panel = ctk.CTkFrame(display_frame, fg_color=COR_CARD_BG, border_color="#E1DCD6", border_width=1, width=220, corner_radius=10)
         self.right_capa_panel.pack(side="right", fill="y")
         self.right_capa_panel.pack_propagate(False)
         
-        tk.Label(self.right_capa_panel, text="Capa do Livro", bg="white", fg=COR_MARROM, font=FONT_SUBTITLE).pack(pady=(0, 10))
+        ctk.CTkLabel(self.right_capa_panel, text="Capa do Livro", text_color=COR_TEXTO_MUTED, font=("Segoe UI", 11, "bold")).pack(pady=(15, 10))
         
-        self.lbl_capa_imagem = tk.Label(self.right_capa_panel, bg="#F0F0F0", text="Sem Imagem", font=FONT_TEXT, bd=1, relief="solid")
-        self.lbl_capa_imagem.pack(fill="both", expand=True, pady=(0, 10))
+        self.lbl_capa_imagem = tk.Label(self.right_capa_panel, bg="#FBF9F6", text="Sem Imagem", font=FONT_TEXT, bd=0, highlightbackground="#E1DCD6", highlightthickness=1)
+        self.lbl_capa_imagem.pack(fill="both", expand=True, padx=15, pady=(0, 15))
         
-        self.btn_baixar_capa = self.criar_botao(self.right_capa_panel, "💾 Baixar Capa", COR_AZUL, COR_AZUL_HOVER, self.baixar_capa)
+        self.btn_baixar_capa = ctk.CTkButton(self.right_capa_panel, text="💾 Baixar Capa", fg_color=COR_AZUL_BOTON, hover_color=COR_AZUL_HOVER, corner_radius=6, command=self.baixar_capa)
 
     def selecionar_capa(self):
         caminho = filedialog.askopenfilename(title="Selecione a Imagem da Capa", filetypes=[("Imagens PNG", "*.png")])
         if caminho:
             self.capa_temp_path = caminho
-            self.lbl_capa_status.config(text=f"Pronto: {os.path.basename(caminho)[:18]}...", fg=COR_AZUL)
+            self.lbl_capa_status.configure(text=f"Pronto: {os.path.basename(caminho)[:18]}...", text_color=COR_AZUL_BOTON)
 
     def cadastrar_livro(self):
         try:
             isbn = self.ent_isbn.get().strip()
             titulo = self.ent_titulo.get().strip()
             autor = self.ent_autor.get().strip()
-            
             raw_ano = self.ent_ano.get().strip()
             raw_qtd = self.ent_qtd.get().strip()
             
@@ -319,7 +369,7 @@ class OtecaModernApp:
             if self.capa_temp_path:
                 self.capas_db.put(isbn, self.capa_temp_path)
                 self.capa_temp_path = None
-                self.lbl_capa_status.config(text="Nenhuma capa anexada", fg="#777777")
+                self.lbl_capa_status.configure(text="Nenhuma capa anexada", text_color="#777777")
 
             mensagem = f"Cadastro: O livro '{titulo}' (ISBN: {isbn}) foi cadastrado com {qtd} exemplares."
             self.registrar_acao(mensagem)
@@ -335,10 +385,10 @@ class OtecaModernApp:
             messagebox.showerror("Erro de Tipo", "Ano de Publicação e Quantidade de Exemplares devem ser números inteiros válidos.")
 
     def atualizar_caixa_texto(self, texto):
-        self.txt_output_box.config(state=tk.NORMAL)
-        self.txt_output_box.delete(1.0, tk.END)
+        self.txt_output_box.configure(state="normal")
+        self.txt_output_box.delete("1.0", tk.END)
         self.txt_output_box.insert(tk.END, texto)
-        self.txt_output_box.config(state=tk.DISABLED)
+        self.txt_output_box.configure(state="disabled")
 
     def buscar_e_exibir_livro(self):
         isbn = self.ent_busca_isbn.get().strip()
@@ -367,7 +417,7 @@ class OtecaModernApp:
                     img = tk.PhotoImage(file=self.capas_db.get(isbn)).subsample(3, 3)
                     self.lbl_capa_imagem.config(image=img, text="")
                     self.img_ref_atual = img
-                    self.btn_baixar_capa.pack(fill="x")
+                    self.btn_baixar_capa.pack(fill="x", padx=15, pady=(0, 15))
                 except Exception:
                     self.lbl_capa_imagem.config(image='', text="Erro ao abrir arquivo")
                     self.btn_baixar_capa.pack_forget()
@@ -387,11 +437,11 @@ class OtecaModernApp:
         
         self.biblio.gerar_relatorio_geral()
         
-        sys.stdout = sys.__stdout__ 
+        sys.stdout = sys.__stdout__
         conteudo_relatorio = captura_buffer.getvalue()
         
         if not conteudo_relatorio.strip() or "vazia" in conteudo_relatorio:
-            conteudo_relatorio = "RELATÓRIO DO ACERVO\n" + "="*50 + "\n\nNenhum livro cadastrado na Lista Encadeada até o momento."
+            conteudo_relatorio = "RELATÓRIO DO ACERVO\n" + "="*50 + "\n\nNenhum livro cadastrado na Árvore até o momento."
             
         self.atualizar_caixa_texto(conteudo_relatorio)
 
@@ -485,7 +535,6 @@ class OtecaModernApp:
                 messagebox.showerror("Erro de Circulação", resultado_mensagem)
             else:
                 messagebox.showinfo("Operação de Empréstimo", resultado_mensagem)
-
                 self.ent_emp_isbn.delete(0, tk.END)
                 self.ent_emp_user.delete(0, tk.END)
 
@@ -524,6 +573,6 @@ class OtecaModernApp:
                 messagebox.showinfo("Desfazer Operação (Pilha)", resultado_mensagem)
 
 if __name__ == "__main__":
-    root = tk.Tk()
+    root = ctk.CTk()
     app = OtecaModernApp(root)
     root.mainloop()
