@@ -25,18 +25,17 @@ def main():
         
         if opcao == "1":
             print("\n--- CADASTRO DE LIVRO ---")
-            isbn = input("ISBN (Código de barras): ").strip()
-            titulo = input("Título do livro: ").strip()
+            isbn = input("ISBN: ").strip()
+            titulo = input("Título: ").strip()
             autor = input("Autor: ").strip()
             
             try:
                 ano = int(input("Ano de publicação: "))
                 qtd = int(input("Quantidade de exemplares: "))
-                
                 novo_livro = Livro(isbn, titulo, autor, ano, qtd)
                 biblioteca.cadastrar_livro(novo_livro)
             except ValueError:
-                print("Erro: Ano e Quantidade de exemplares precisam ser números inteiros.")
+                print("Erro: Ano e Quantidade devem ser números inteiros.")
                 
         elif opcao == "2":
             print("\n--- REMOVER LIVRO ---")

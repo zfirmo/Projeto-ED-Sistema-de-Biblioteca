@@ -377,6 +377,11 @@ class Biblioteca:
 
     def realizar_emprestimo(self, isbn, nome_usuario):
         livro = self.tabela_hash.buscar(isbn)
+
+        if not livro:
+            print("Erro: Livro não encontrado.")
+            return
+
         if livro is None:
             print("Impossível emprestar: Livro não cadastrado.")
             return
