@@ -1,0 +1,16 @@
+[23/06/2026 11:19:22] Sistema iniciado.
+[23/06/2026 11:19:50] Cadastro: O livro 'Teste' foi adicionado.
+[23/06/2026 11:19:55] Relatório Geral do acervo gerado na tela.
+[23/06/2026 11:20:20] Remoção: O livro 'Teste' foi removido.
+[23/06/2026 11:20:23] Relatório Geral do acervo gerado na tela.
+[23/06/2026 11:21:23] Cadastro: O livro 'Teste' foi adicionado.
+[23/06/2026 11:24:27] Desfazer: firmo removido da fila de 'Teste'.
+[23/06/2026 11:24:35] Livro 'Teste' devolvido ao acervo.
+[23/06/2026 11:24:46] Livro 'Teste' devolvido ao acervo.
+[23/06/2026 11:25:27] Relatório Geral do acervo gerado na tela.
+[23/06/2026 11:27:10] Cadastro: O livro 'Nenhum' foi adicionado.
+[23/06/2026 11:27:14] Relatório Geral do acervo gerado na tela.
+[23/06/2026 11:29:22] Cadastro: O livro 'Sabedoria' foi adicionado.
+[23/06/2026 11:29:27] Relatório Geral do acervo gerado na tela.
+[23/06/2026 11:39:25] Cadastro: O livro 'Sabemuito' foi adicionado.
+[23/06/2026 11:39:30] Relatório Geral do acervo gerado na tela.

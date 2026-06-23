@@ -12,7 +12,6 @@ def exibir_menu():
     print("5. Realizar Empréstimo")
     print("6. Registrar Devolução")
     print("7. Desfazer Última Operação (Pilha)")
-    print("8. Gerar Relatório Geral do Acervo")
     print("0. Sair do Sistema")
     print("="*45)
  
@@ -25,15 +24,18 @@ def main():
         
         if opcao == "1":
             print("\n--- CADASTRO DE LIVRO ---")
-            isbn = input("ISBN: ").strip()
+            isbn = input("ISBN (10 ou 13 dígitos): ").strip()
             titulo = input("Título: ").strip()
             autor = input("Autor: ").strip()
             
             try:
                 ano = int(input("Ano de publicação: "))
                 qtd = int(input("Quantidade de exemplares: "))
+                
                 novo_livro = Livro(isbn, titulo, autor, ano, qtd)
+
                 biblioteca.cadastrar_livro(novo_livro)
+                
             except ValueError:
                 print("Erro: Ano e Quantidade devem ser números inteiros.")
                 
@@ -56,12 +58,10 @@ def main():
             else:
                 print("O livro com o ISBN informado não foi localizado.")
                 
-        elif opcao == "4":
-
+        elif opcao == "4" or opcao == "8":
             biblioteca.gerar_relatorio_geral()
             
         elif opcao == "5":
-
             print("\n--- REALIZAR EMPRÉSTIMO ---")
             isbn = input("ISBN do livro desejado: ").strip()
             usuario = input("Nome do usuário solicitante: ").strip()
@@ -71,7 +71,6 @@ def main():
                 print("Erro: Todos os campos são obrigatórios.")
                 
         elif opcao == "6":
-
             print("\n--- REGISTRAR DEVOLUÇÃO ---")
             isbn = input("ISBN do livro a ser devolvido: ").strip()
             if isbn:
@@ -80,22 +79,14 @@ def main():
                 print("Erro: O campo ISBN é obrigatório.")
                 
         elif opcao == "7":
-
             print("\n--- DESFAZER ÚLTIMA OPERAÇÃO ---")
             biblioteca.desfazer_ultimo_emprestimo()
             
-        elif opcao == "8":
-
-            biblioteca.gerar_relatorio_geral()
-            
         elif opcao == "0":
-
             print("\nFinalizando o sistema Oteca. Até logo!")
             sys.exit(0)
-
         else:
-
-            print("Opção inválida! Por favor, escolha um número de 0 a 8.")
+            print("Opção inválida!")
 
 if __name__ == "__main__":
     main()
