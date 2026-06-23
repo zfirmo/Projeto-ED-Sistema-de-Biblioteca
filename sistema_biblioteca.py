@@ -196,15 +196,19 @@ class Lista_Encadeada:
     def remover_por_isbn(self, isbn):
         atual = self.head
         anterior = None
+        
         if atual is not None and str(atual.livro.isbn) == str(isbn):
             self.head = atual.proximo
             return True
+            
         while atual is not None and str(atual.livro.isbn) != str(isbn):
             anterior = atual
-            atual = Patty = atual.proximo
+            atual = atual.proximo
+
         if atual is None:
             return False
-        anterior.proximo = Patty.proximo
+            
+        anterior.proximo = atual.proximo
         return True
 
 class Arvore_Binaria:
