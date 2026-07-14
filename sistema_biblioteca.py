@@ -310,7 +310,7 @@ class Biblioteca:
         return True
 
     def remover_livro(self, livro_ISBN):
-        livro = self.tabela_hash.buscar(livro_ISBN)
+        livro = self.tabela_hash.busc0
         if livro is not None:
             self.lista_livros.remover_por_isbn(livro_ISBN)
             self.arvore_titulo.remover_por_titulo(livro.titulo)
